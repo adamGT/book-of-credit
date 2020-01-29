@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/navigation_credit"
+        android:enabled="true"
+        android:icon="@drawable/credit"
+        android:title="@string/bado_credit"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/navigation_debit"
+        android:enabled="true"
+        android:icon="@drawable/debit_selected"
+        android:title="@string/bado_debit"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/navigation_general"
+        android:enabled="true"
+        android:icon="@drawable/general"
+        android:title="@string/bado_general"
+        app:showAsAction="ifRoom" />
+
+</menu>

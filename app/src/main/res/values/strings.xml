@@ -1,0 +1,55 @@
+<resources>
+    <string name="app_name">Book of Credit</string>
+
+    <!--    General-->
+    <string name="bado_submit">Submit</string>
+    <string name="bado_hint_email">Email</string>
+    <string name="bado_hint_name">Name</string>
+    <string name="bado_hint_password">Password</string>
+
+
+    <!--    Login-->
+    <string name="bado_login">LogIn</string>
+    <string name="bado_forgot_password">Forgot Password?</string>
+    <string name="bado_new_user_signup">new user? SIGN UP</string>
+
+
+    <!--    Signup-->
+    <string name="bado_signup">SignUp</string>
+    <string name="bado_hint_confirm_password">Confirm Password</string>
+    <string name="bado_already_member">already a member? LOGIN</string>
+
+
+    <!--    Forgot Password-->
+    <string name="bado_forgot_password_title">Please enter your email</string>
+    <string name="bado_forgot_password_subtitle">so we can send you a verification code</string>
+
+
+    <!--    Verification-->
+    <string name="bado_verification_title">Enter Verification Code</string>
+    <string name="bado_resend_verification">didn’t receive a Code? Resend</string>string>
+
+
+    <!--    Home-->
+    <string name="bado_credit">Credit</string>
+    <string name="bado_debit">Debit</string>
+    <string name="bado_general">General</string>
+
+
+    <string name="title_activity_home">HomeActivity</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="menu_setting">Settings</string>
+    <string name="menu_share">Share</string>
+    <string name="menu_about">About</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+
+</resources>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3E8197</color>
+    <color name="colorPrimaryDark">#265868</color>
+    <color name="colorAccent">#2CC268</color>
+    <color name="textColorPrimary">#3E4A59</color>
+    <color name="toolbarIconColor">@color/textColorPrimary</color>
+    <color name="white">#FFFFFF</color>
+    <color name="DarkTextColor">#3E4A59</color>
+    <color name="custom">#696969</color>
+    <color name="skip">#D6FF0000</color>
+    <color name="navigationDrawerBackground">#EBECEE</color>
+</resources>
