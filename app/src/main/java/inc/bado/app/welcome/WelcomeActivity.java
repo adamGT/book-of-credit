@@ -178,6 +178,10 @@ public class WelcomeActivity extends AppCompatActivity implements
     public void signUp() {
         Toast.makeText(mContext,"Under Construction",Toast.LENGTH_LONG).show();
 
+        //start the welcome page
+        Intent intent = new Intent(WelcomeActivity.this, HomeActivity.class);
+        finishAffinity();
+        startActivity(intent);
     }
 
     @Override
@@ -197,7 +201,12 @@ public class WelcomeActivity extends AppCompatActivity implements
 
     @Override
     public void onVerified(String vCode) {
+        Toast.makeText(mContext,"Under Construction",Toast.LENGTH_LONG).show();
 
+        //start the welcome page
+        Intent intent = new Intent(WelcomeActivity.this, HomeActivity.class);
+        finishAffinity();
+        startActivity(intent);
     }
 
 

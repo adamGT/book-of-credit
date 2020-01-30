@@ -10,6 +10,10 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -19,20 +23,29 @@ import android.widget.TextView;
 
 import com.google.android.material.navigation.NavigationView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import inc.bado.app.R;
+import inc.bado.app.adapters.DebitListAdapter;
+import inc.bado.app.models.Debit;
 
 public class DebitFragment extends Fragment implements
         NavigationView.OnNavigationItemSelectedListener{
 
 
-    @BindView(R.id.drawer_layout) public DrawerLayout drawer;
     @BindView(R.id.app_bar) Toolbar toolbar;
+    @BindView(R.id.drawer_layout) public DrawerLayout drawer;
+    @BindView(R.id.debit_rv) RecyclerView recyclerView;
 
 
     private View view;
     private Context mContext;
+    private DebitListAdapter adapter;
+
+    private List<Debit> debitList = new ArrayList<>();
 
     private OnDebitInteractionListener mListener;
 
@@ -64,15 +77,31 @@ public class DebitFragment extends Fragment implements
 
         mContext = getContext();
 
+        adapter = new DebitListAdapter(debitList, mContext);
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(mLayoutManager);
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.addItemDecoration(new DividerItemDecoration(getContext(), LinearLayoutManager.VERTICAL));
+        recyclerView.setAdapter(adapter);
 
+        loadDebitData();
         setUpDrawer(view);
         return view;
     }
 
-    public void onButtonPressed(Uri uri) {
+    public void onButtonPressed() {
         if (mListener != null) {
         }
     }
+
+
+    public void loadDebitData(){
+        debitList.add(new Debit("To Buy 20 Shoes","Daniel G", "200"));
+        debitList.add(new Debit("To Buy 20 Shoes","Adam G", "200"));
+        debitList.add(new Debit("To Buy 20 Shoes","Abel G", "200"));
+        debitList.add(new Debit("To Buy 20 Shoes","Ashe G", "200"));
+    }
+
 
     private void setUpDrawer(View view){
 
@@ -95,27 +124,27 @@ public class DebitFragment extends Fragment implements
 
             @Override
             public void onDrawerOpened(@NonNull View drawerView) {
-                //mListener.onDrawerOpened();
+                mListener.onDrawerOpened();
             }
 
             @Override
             public void onDrawerClosed(@NonNull View drawerView) {
-                //mListener.onDrawerClosed();
+                mListener.onDrawerClosed();
             }
 
             @Override
             public void onDrawerStateChanged(int newState) {
                 if( newState == DrawerLayout.STATE_SETTLING && !drawer.isDrawerOpen(GravityCompat.START)){
-//                    mListener.onDrawerOpened();
+                    mListener.onDrawerOpened();
                 }
                 else if (newState == DrawerLayout.STATE_SETTLING && drawer.isDrawerOpen(GravityCompat.START)){
-//                    mListener.onDrawerClosed();
+                    mListener.onDrawerClosed();
                 }
                 else if (!drawer.isDrawerOpen(GravityCompat.START)){
-//                    mListener.onDrawerClosed();
+                    mListener.onDrawerClosed();
                 }
                 else if (drawer.isDrawerOpen(GravityCompat.START)){
-//                    mListener.onDrawerOpened();
+                    mListener.onDrawerOpened();
                 }
 
             }
@@ -183,5 +212,7 @@ public class DebitFragment extends Fragment implements
     }
 
     public interface OnDebitInteractionListener {
+        void onDrawerOpened();
+        void onDrawerClosed();
     }
 }

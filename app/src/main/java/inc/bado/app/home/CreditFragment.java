@@ -10,6 +10,10 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -20,22 +24,29 @@ import android.widget.TextView;
 
 import com.google.android.material.navigation.NavigationView;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import inc.bado.app.R;
+import inc.bado.app.adapters.CreditListAdapter;
+import inc.bado.app.models.Credit;
 
 public class CreditFragment extends Fragment implements
         NavigationView.OnNavigationItemSelectedListener{
 
 
-    @BindView(R.id.drawer_layout) public DrawerLayout drawer;
     @BindView(R.id.app_bar) Toolbar toolbar;
+    @BindView(R.id.drawer_layout) public DrawerLayout drawer;
+    @BindView(R.id.credit_rv) RecyclerView recyclerView;
 
     private View view;
     private Context mContext;
+    private CreditListAdapter adapter;
+
+    private List<Credit> creditList = new ArrayList<>();
 
     private OnCreditInteractionListener mListener;
 
@@ -65,9 +76,15 @@ public class CreditFragment extends Fragment implements
 
         mContext = getContext();
 
+        adapter = new CreditListAdapter(creditList,mContext);
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(mLayoutManager);
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.addItemDecoration(new DividerItemDecoration(getContext(), LinearLayoutManager.VERTICAL));
+        recyclerView.setAdapter(adapter);
 
 
-
+        loadCreditData();
         setUpDrawer(view);
         return view;
     }
@@ -75,6 +92,13 @@ public class CreditFragment extends Fragment implements
     public void onButtonPressed(Uri uri) {
         if (mListener != null) {
         }
+    }
+
+    public void loadCreditData(){
+        creditList.add(new Credit("To Buy 20 Shoes","Daniel G", "200"));
+        creditList.add(new Credit("To Buy 20 Shoes","Adam G", "200"));
+        creditList.add(new Credit("To Buy 20 Shoes","Abel G", "200"));
+        creditList.add(new Credit("To Buy 20 Shoes","Ashe G", "200"));
     }
 
     private void setUpDrawer(View view){
@@ -98,27 +122,27 @@ public class CreditFragment extends Fragment implements
 
             @Override
             public void onDrawerOpened(@NonNull View drawerView) {
-                //mListener.onDrawerOpened();
+                mListener.onDrawerOpened();
             }
 
             @Override
             public void onDrawerClosed(@NonNull View drawerView) {
-                //mListener.onDrawerClosed();
+                mListener.onDrawerClosed();
             }
 
             @Override
             public void onDrawerStateChanged(int newState) {
                 if( newState == DrawerLayout.STATE_SETTLING && !drawer.isDrawerOpen(GravityCompat.START)){
-//                    mListener.onDrawerOpened();
+                    mListener.onDrawerOpened();
                 }
                 else if (newState == DrawerLayout.STATE_SETTLING && drawer.isDrawerOpen(GravityCompat.START)){
-//                    mListener.onDrawerClosed();
+                    mListener.onDrawerClosed();
                 }
                 else if (!drawer.isDrawerOpen(GravityCompat.START)){
-//                    mListener.onDrawerClosed();
+                    mListener.onDrawerClosed();
                 }
                 else if (drawer.isDrawerOpen(GravityCompat.START)){
-//                    mListener.onDrawerOpened();
+                    mListener.onDrawerOpened();
                 }
 
             }
@@ -186,5 +210,7 @@ public class CreditFragment extends Fragment implements
     }
 
     public interface OnCreditInteractionListener {
+        void onDrawerOpened();
+        void onDrawerClosed();
     }
 }

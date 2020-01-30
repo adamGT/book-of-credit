@@ -15,6 +15,7 @@ import com.mukesh.OnOtpCompletionListener;
 import com.mukesh.OtpView;
 
 import butterknife.BindView;
+import butterknife.ButterKnife;
 import inc.bado.app.R;
 
 public class VerificationFragment extends Fragment {
@@ -48,6 +49,7 @@ public class VerificationFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_verification, container, false);
+        ButterKnife.bind(this, view);
 
 //        vCode.setListener(new OnOtpCompletionListener() {
 //            @Override public void onOtpCompleted(String otp) {
@@ -55,8 +57,8 @@ public class VerificationFragment extends Fragment {
 //                // do Stuff
 //            }
 //        });
-//
-//        vCode.setOtpCompletionListener();
+
+        submit.setOnClickListener(v -> verify("CODE"));
 
         return view;
     }

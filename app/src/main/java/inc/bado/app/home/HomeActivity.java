@@ -9,6 +9,7 @@ import androidx.fragment.app.FragmentManager;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -128,6 +129,18 @@ public class HomeActivity extends AppCompatActivity implements
 
 
     @Override
+    public void onDrawerOpened(){
+        navigationLayout.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onDrawerClosed(){
+        navigationLayout.setVisibility(View.VISIBLE);
+    }
+
+
+
+    @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
 
         switch (item.getItemId()) {
@@ -161,8 +174,6 @@ public class HomeActivity extends AppCompatActivity implements
                         .commit();
 
                 currentActiveFragment = generalFragment;
-
-                //conversationsFragment.findConversations();
 
 
                 return true;
