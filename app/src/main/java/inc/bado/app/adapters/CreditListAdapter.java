@@ -119,5 +119,9 @@ public class ViewHolder extends RecyclerView.ViewHolder {
         return creditList != null ? creditList.size() : 0;
     }
 
+    public void addItems( List<Credit> credits) {
+        this.creditList=credits;
+        notifyDataSetChanged();
+    }
 
 }

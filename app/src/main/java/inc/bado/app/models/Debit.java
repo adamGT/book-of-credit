@@ -1,14 +1,37 @@
 package inc.bado.app.models;
 
-public class Debit {
-    private String title;
-    private String name;
-    private String amount;
+import androidx.annotation.NonNull;
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+import androidx.room.TypeConverters;
 
-    public Debit(String title, String name, String amount) {
+import java.util.Date;
+
+import inc.bado.app.utils.DateTypeConverter;
+
+@Entity(tableName = "debit")
+public class Debit {
+
+    @PrimaryKey(autoGenerate = true)
+    public int uid;
+
+    @ColumnInfo(name = "debit_title")
+    private String title;
+    @ColumnInfo(name = "debit_name")
+    private String name;
+    @ColumnInfo(name = "debit_amount")
+    private float amount;
+    @ColumnInfo(name = "debit_time")
+    @TypeConverters(DateTypeConverter.class)
+    @NonNull
+    private Date time;
+
+    public Debit(String title, String name, float amount,Date time) {
         this.title = title;
         this.name = name;
         this.amount = amount;
+        this.time = time;
     }
 
     public String getTitle() {
@@ -27,11 +50,20 @@ public class Debit {
         this.name = name;
     }
 
-    public String getAmount() {
+    public float getAmount() {
         return amount;
     }
 
-    public void setAmount(String amount) {
+    public void setAmount(float amount) {
         this.amount = amount;
+    }
+
+    @NonNull
+    public Date getTime() {
+        return time;
+    }
+
+    public void setTime(@NonNull Date time) {
+        this.time = time;
     }
 }

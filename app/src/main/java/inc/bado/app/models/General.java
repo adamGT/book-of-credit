@@ -1,15 +1,39 @@
 package inc.bado.app.models;
 
+import androidx.annotation.NonNull;
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+import androidx.room.TypeConverters;
+
+import java.util.Date;
+
+import inc.bado.app.utils.DateTypeConverter;
+
+@Entity(tableName = "general")
 public class General {
+    @PrimaryKey(autoGenerate = true)
+    public int uid;
+
+    @ColumnInfo(name = "general_title")
     private String title;
+    @ColumnInfo(name = "general_name")
     private String name;
-    private String amount;
+    @ColumnInfo(name = "general_amount")
+    private float amount;
+    @TypeConverters(DateTypeConverter.class)
+    @ColumnInfo(name = "general_time")
+    @NonNull
+    private Date time;
+
+    @ColumnInfo(name = "general_iscredit")
     private boolean isCredit;
 
-    public General(String title, String name, String amount,boolean isCredit) {
+    public General(String title, String name, float amount, Date time, boolean isCredit) {
         this.title = title;
         this.name = name;
         this.amount = amount;
+        this.time = time;
         this.isCredit = isCredit;
     }
 
@@ -29,11 +53,11 @@ public class General {
         this.name = name;
     }
 
-    public String getAmount() {
+    public float getAmount() {
         return amount;
     }
 
-    public void setAmount(String amount) {
+    public void setAmount(float amount) {
         this.amount = amount;
     }
 
@@ -44,4 +68,14 @@ public class General {
     public void setCredit(boolean credit) {
         isCredit = credit;
     }
+
+    @NonNull
+    public Date getTime() {
+        return time;
+    }
+
+    public void setTime(@NonNull Date time) {
+        this.time = time;
+    }
+
 }

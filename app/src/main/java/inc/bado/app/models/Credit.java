@@ -1,14 +1,36 @@
 package inc.bado.app.models;
 
-public class Credit {
-    private String title;
-    private String name;
-    private String amount;
+import androidx.annotation.NonNull;
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+import androidx.room.TypeConverters;
 
-    public Credit(String title, String name, String amount) {
+import java.util.Date;
+
+import inc.bado.app.utils.DateTypeConverter;
+
+@Entity(tableName = "credit")
+public class Credit {
+    @PrimaryKey(autoGenerate = true)
+    public int uid;
+
+    @ColumnInfo(name = "credit_title")
+    private String title;
+    @ColumnInfo(name = "credit_name")
+    private String name;
+    @ColumnInfo(name = "credit_amount")
+    private float amount;
+    @TypeConverters(DateTypeConverter.class)
+    @ColumnInfo(name = "credit_time")
+    @NonNull
+    private Date time;
+
+    public Credit(String title, String name, float amount,Date time) {
         this.title = title;
         this.name = name;
         this.amount = amount;
+        this.time = time;
     }
 
     public String getTitle() {
@@ -27,11 +49,19 @@ public class Credit {
         this.name = name;
     }
 
-    public String getAmount() {
+    public float getAmount() {
         return amount;
     }
 
-    public void setAmount(String amount) {
+    public void setAmount(float amount) {
         this.amount = amount;
+    }
+
+    public Date getTime() {
+        return time;
+    }
+
+    public void setTime(Date time) {
+        this.time = time;
     }
 }

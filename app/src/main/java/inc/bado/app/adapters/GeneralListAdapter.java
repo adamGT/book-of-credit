@@ -121,4 +121,10 @@ public class GeneralListAdapter extends RecyclerView.Adapter<GeneralListAdapter.
     public int getItemCount() {
         return generalList != null ? generalList.size() : 0;
     }
+
+
+    public void addItems( List<General> generals) {
+        this.generalList=generals;
+        notifyDataSetChanged();
+    }
 }

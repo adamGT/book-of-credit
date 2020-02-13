@@ -1,6 +1,7 @@
 package inc.bado.app.home;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
@@ -8,10 +9,13 @@ import androidx.fragment.app.FragmentManager;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -26,6 +30,7 @@ public class HomeActivity extends AppCompatActivity implements
 
     @BindView(R.id.navigation) BottomNavigationView navigation;
     @BindView(R.id.navigationLayout) ConstraintLayout navigationLayout;
+    @BindView(R.id.fab_add) FloatingActionButton addButton;
 
 
     // List of Fragments shown in home activity
@@ -67,6 +72,8 @@ public class HomeActivity extends AppCompatActivity implements
 
 
         navigation.setOnNavigationItemSelectedListener(HomeActivity.this);
+
+        addButton.setOnClickListener(v -> onAddClicked());
 
 
         fm.beginTransaction()
@@ -121,6 +128,16 @@ public class HomeActivity extends AppCompatActivity implements
     }
 
 
+
+
+    public void onAddClicked(){
+        if(currentActiveFragment == creditFragment){
+            creditFragment.addCredit();
+        }else if(currentActiveFragment == debitFragment){
+            debitFragment.addDebit();
+        }
+    }
+
     public void showHomeFragments(){
         fm.beginTransaction()
                 .show(currentActiveFragment)
@@ -130,11 +147,13 @@ public class HomeActivity extends AppCompatActivity implements
 
     @Override
     public void onDrawerOpened(){
+        addButton.setVisibility(View.GONE);
         navigationLayout.setVisibility(View.GONE);
     }
 
     @Override
     public void onDrawerClosed(){
+        addButton.setVisibility(View.GONE);
         navigationLayout.setVisibility(View.VISIBLE);
     }
 
@@ -145,6 +164,8 @@ public class HomeActivity extends AppCompatActivity implements
 
         switch (item.getItemId()) {
             case R.id.navigation_credit:
+
+                addButton.setVisibility(View.VISIBLE);
 
                 fm.beginTransaction()
                         .hide(currentActiveFragment)
@@ -157,6 +178,8 @@ public class HomeActivity extends AppCompatActivity implements
 
             case R.id.navigation_debit:
 
+                addButton.setVisibility(View.VISIBLE);
+
                 fm.beginTransaction()
                         .hide(currentActiveFragment)
                         .show(debitFragment)
@@ -167,6 +190,8 @@ public class HomeActivity extends AppCompatActivity implements
                 return true;
 
             case R.id.navigation_general:
+
+                addButton.setVisibility(View.GONE);
 
                 fm.beginTransaction()
                         .hide(currentActiveFragment)

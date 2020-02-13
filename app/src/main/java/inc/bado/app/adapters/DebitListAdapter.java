@@ -119,4 +119,9 @@ public class DebitListAdapter extends RecyclerView.Adapter<DebitListAdapter.View
     }
 
 
+    public void addItems( List<Debit> debits) {
+        this.debitList=debits;
+        notifyDataSetChanged();
+    }
+
 }

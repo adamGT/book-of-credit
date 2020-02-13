@@ -6,10 +6,13 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -19,18 +22,28 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
 
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import inc.bado.app.R;
 import inc.bado.app.adapters.DebitListAdapter;
+import inc.bado.app.models.Credit;
 import inc.bado.app.models.Debit;
+import inc.bado.app.models.General;
+import inc.bado.app.storage.debitStorage.DebitViewModel;
+import inc.bado.app.storage.generaStorage.GeneralViewModel;
 
 public class DebitFragment extends Fragment implements
         NavigationView.OnNavigationItemSelectedListener{
@@ -40,13 +53,17 @@ public class DebitFragment extends Fragment implements
     @BindView(R.id.drawer_layout) public DrawerLayout drawer;
     @BindView(R.id.debit_rv) RecyclerView recyclerView;
 
+    @BindView(R.id.tot_debit) TextView totalDebit;
 
     private View view;
     private Context mContext;
     private DebitListAdapter adapter;
 
-    private List<Debit> debitList = new ArrayList<>();
+    private float totalDebitAmount;
 
+    private List<Debit> debitList = new ArrayList<>();
+    private DebitViewModel debitViewModel;
+    private GeneralViewModel generalViewModel;
     private OnDebitInteractionListener mListener;
 
     private DebitFragment() {
@@ -96,13 +113,64 @@ public class DebitFragment extends Fragment implements
 
 
     public void loadDebitData(){
-        debitList.add(new Debit("To Buy 20 Shoes","Daniel G", "200"));
-        debitList.add(new Debit("To Buy 20 Shoes","Adam G", "200"));
-        debitList.add(new Debit("To Buy 20 Shoes","Abel G", "200"));
-        debitList.add(new Debit("To Buy 20 Shoes","Ashe G", "200"));
+        generalViewModel = ViewModelProviders.of(this).get(GeneralViewModel.class);
+        debitViewModel = ViewModelProviders.of(this).get(DebitViewModel.class);
+        debitViewModel.getAllDebits().observe(getViewLifecycleOwner(), new Observer<List<Debit>>() {
+            @Override
+            public void onChanged(List<Debit> debits) {
+                totalDebitAmount = 0;
+                adapter.addItems(debits);
+
+                for (Debit debit:debits
+                ) {
+                    totalDebitAmount += debit.getAmount();
+                }
+
+                totalDebit.setText(""+totalDebitAmount);
+            }
+        });
     }
 
+    public void addDebit(){
+        MaterialAlertDialogBuilder debitDialog = new MaterialAlertDialogBuilder(mContext);
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.add_credit_layout, null);
+        debitDialog.setView(dialogView);
 
+        TextView titleText = dialogView.findViewById(R.id.dialog_title);
+        titleText.setText(mContext.getString(R.string.bado_debit_dialog_title));
+
+        TextInputLayout titleLayout = dialogView.findViewById(R.id.title_text_input);
+        EditText title = dialogView.findViewById(R.id.title_edit_text);
+        TextInputLayout nameLayout = dialogView.findViewById(R.id.name_text_input);
+        EditText name = dialogView.findViewById(R.id.name_edit_text);
+        TextInputLayout amountLayout = dialogView.findViewById(R.id.amount_text_input);
+        EditText amount = dialogView.findViewById(R.id.amount_edit_text);
+
+        MaterialButton add = dialogView.findViewById(R.id.add_button);
+
+        AlertDialog dialog = debitDialog.create();
+
+        add.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                add(title.getText().toString(),name.getText().toString(),Float.parseFloat(amount.getText().toString()));
+                dialog.dismiss();
+            }
+        });
+
+
+
+        dialog.show();
+    }
+
+    public void add(String title,String name,float amount){
+        Date createdAt = Calendar.getInstance().getTime();
+        debitViewModel.insert(new Debit(title,name, amount,createdAt));
+        generalViewModel.insert(new General(title,name, amount,createdAt,false));
+//        debitList.add(new Debit(title,name, amount,createdAt));
+//        adapter.notifyDataSetChanged();
+    }
     private void setUpDrawer(View view){
 
         final ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(

@@ -6,6 +6,7 @@
     <string name="bado_hint_email">Email</string>
     <string name="bado_hint_name">Name</string>
     <string name="bado_hint_password">Password</string>
+    <string name="bado_add">Add</string>
 
 
     <!--    Login-->
@@ -34,6 +35,15 @@
     <string name="bado_credit">Credit</string>
     <string name="bado_debit">Debit</string>
     <string name="bado_general">General</string>
+
+    <!--    Credit-->
+    <string name="bado_hint_title">Title</string>
+    <string name="bado_credit_dialog_title">Add a new Credit</string>
+    <string name="bado_hint_amount">Amount</string>
+
+
+    <!--    Debit-->
+    <string name="bado_debit_dialog_title">Add a new Debit</string>
 
 
     <string name="title_activity_home">HomeActivity</string>

@@ -10,6 +10,8 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -24,13 +26,16 @@ import android.widget.TextView;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import inc.bado.app.R;
 import inc.bado.app.adapters.GeneralListAdapter;
+import inc.bado.app.models.Debit;
 import inc.bado.app.models.General;
+import inc.bado.app.storage.generaStorage.GeneralViewModel;
 
 public class GeneralFragment extends Fragment implements
         NavigationView.OnNavigationItemSelectedListener{
@@ -40,12 +45,16 @@ public class GeneralFragment extends Fragment implements
     @BindView(R.id.drawer_layout) public DrawerLayout drawer;
     @BindView(R.id.general_rv) RecyclerView recyclerView;
 
+    @BindView(R.id.tot_general) TextView totalGeneral;
+
     private View view;
     private Context mContext;
     private GeneralListAdapter adapter;
 
-    private List<General> generalList = new ArrayList<>();
+    private float totalGeneralAmount;
 
+    private List<General> generalList = new ArrayList<>();
+    private GeneralViewModel generalViewModel;
     private OnGeneralInteractionListener mListener;
 
     private GeneralFragment() {
@@ -97,10 +106,30 @@ public class GeneralFragment extends Fragment implements
 
 
     public void loadGeneralData(){
-        generalList.add(new General("To Buy 20 Shoes","Daniel G", "200",true));
-        generalList.add(new General("To Buy 20 Shoes","Adam G", "200",true));
-        generalList.add(new General("To Buy 20 Shoes","Abel G", "200",true));
-        generalList.add(new General("To Buy 20 Shoes","Ashe G", "200",false));
+        generalViewModel = ViewModelProviders.of(this).get(GeneralViewModel.class);
+        generalViewModel.getAllDebits().observe(getViewLifecycleOwner(), new Observer<List<General>>() {
+            @Override
+            public void onChanged(List<General> generals) {
+                totalGeneralAmount = 0;
+                adapter.addItems(generals);
+
+                for (General general:generals
+                ) {
+                    if(general.isCredit()) {
+                        totalGeneralAmount += general.getAmount();
+                    }else {
+                        totalGeneralAmount -= general.getAmount();
+                    }
+                }
+
+                totalGeneral.setText(""+totalGeneralAmount);
+                if(totalGeneralAmount < 0){
+                    totalGeneral.setTextColor(mContext.getResources().getColor(R.color.skip));
+                }else {
+                    totalGeneral.setTextColor(mContext.getResources().getColor(R.color.colorAccent));
+                }
+            }
+        });
     }
 
 
