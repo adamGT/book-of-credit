@@ -124,4 +124,9 @@ public class ViewHolder extends RecyclerView.ViewHolder {
         notifyDataSetChanged();
     }
 
+    public Credit getItemAt(int index){
+        return creditList.get(index);
+    }
+
+
 }

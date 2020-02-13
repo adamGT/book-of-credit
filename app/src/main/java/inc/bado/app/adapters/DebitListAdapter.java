@@ -124,4 +124,8 @@ public class DebitListAdapter extends RecyclerView.Adapter<DebitListAdapter.View
         notifyDataSetChanged();
     }
 
+
+    public Debit getItemAt(int index){
+        return debitList.get(index);
+    }
 }

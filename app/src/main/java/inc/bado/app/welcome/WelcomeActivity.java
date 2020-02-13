@@ -154,7 +154,7 @@ public class WelcomeActivity extends AppCompatActivity implements
 
     @Override
     public void login() {
-        Toast.makeText(mContext,"Under Construction",Toast.LENGTH_LONG).show();
+//        Toast.makeText(mContext,"Under Construction",Toast.LENGTH_LONG).show();
 
         //start the welcome page
         Intent intent = new Intent(WelcomeActivity.this, HomeActivity.class);

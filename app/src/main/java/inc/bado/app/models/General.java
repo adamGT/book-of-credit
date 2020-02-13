@@ -12,7 +12,6 @@ import inc.bado.app.utils.DateTypeConverter;
 
 @Entity(tableName = "general")
 public class General {
-    @PrimaryKey(autoGenerate = true)
     public int uid;
 
     @ColumnInfo(name = "general_title")
@@ -24,6 +23,7 @@ public class General {
     @TypeConverters(DateTypeConverter.class)
     @ColumnInfo(name = "general_time")
     @NonNull
+    @PrimaryKey()
     private Date time;
 
     @ColumnInfo(name = "general_iscredit")
