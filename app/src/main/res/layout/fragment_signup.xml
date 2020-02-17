@@ -31,7 +31,7 @@
         app:layout_constraintTop_toBottomOf="@+id/logo_iv" />
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/name_text_input"
+        android:id="@+id/email_text_input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
@@ -50,17 +50,18 @@
         app:startIconTint="@color/colorPrimary">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/name_edit_text"
+            android:id="@+id/email_edit_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
+            android:inputType="textEmailAddress"
             android:textSize="16sp"
             android:maxLines="1" />
     </com.google.android.material.textfield.TextInputLayout>
 
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/email_text_input"
+        android:id="@+id/name_text_input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
@@ -73,16 +74,17 @@
         app:boxBackgroundColor="@android:color/transparent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/name_text_input"
+        app:layout_constraintTop_toBottomOf="@+id/email_text_input"
         app:layout_constraintVertical_bias="0"
         app:startIconDrawable="@drawable/user"
         app:startIconTint="@color/colorPrimary">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/email_edit_text"
+            android:id="@+id/name_edit_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
+            android:inputType="textPersonName"
             android:textSize="16sp"
             android:maxLines="1" />
     </com.google.android.material.textfield.TextInputLayout>
@@ -99,7 +101,7 @@
         app:errorEnabled="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/email_text_input"
+        app:layout_constraintTop_toBottomOf="@+id/name_text_input"
         app:passwordToggleEnabled="true"
         app:passwordToggleTint="@color/white"
         app:startIconDrawable="@drawable/password"
@@ -126,7 +128,6 @@
         android:layout_marginEnd="32dp"
         android:hint="@string/bado_hint_confirm_password"
         app:boxBackgroundColor="@android:color/white"
-        app:hintTextAppearance="@style/TexInput"
         app:errorEnabled="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

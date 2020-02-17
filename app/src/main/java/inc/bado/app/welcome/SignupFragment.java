@@ -12,11 +12,14 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import inc.bado.app.R;
+import inc.bado.app.models.User;
 
 public class SignupFragment extends Fragment {
 
@@ -33,6 +36,7 @@ public class SignupFragment extends Fragment {
     @BindView(R.id.signup_button) MaterialButton signUp;
     @BindView(R.id.already_member) TextView alreadyMember;
 
+    private View view;
     private Context mContext;
     private OnSignUpFragmentListener mListener;
 
@@ -56,11 +60,10 @@ public class SignupFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_signup, container, false);
+        view = inflater.inflate(R.layout.fragment_signup, container, false);
         ButterKnife.bind(this, view);
 
         mContext = getContext();
-
 
 
         signUp.setOnClickListener(v -> signUp());
@@ -71,9 +74,44 @@ public class SignupFragment extends Fragment {
     }
 
     public void signUp() {
-        if (mListener != null){
-            mListener.signUp();
-        }
+        String userName = name.getText().toString().trim();
+        String userEmail = email.getText().toString().trim();
+        String userPassword = password.getText().toString();
+        String userConfirmPassword = confirmPassword.getText().toString();
+
+        if (userName != null) {
+            if (userEmail != null) {
+                if (userPassword != null) {
+//                    if (userPassword.toCharArray().length < 6){
+                        if (userConfirmPassword != null) {
+                            if(userPassword.contentEquals(userConfirmPassword)) {
+                                User user = new User(userName,userEmail,userPassword);
+                                if (mListener != null) {
+                                    mListener.signUp(user);
+    //                                Snackbar.make(view,userEmail, BaseTransientBottomBar.LENGTH_SHORT).show();
+
+                                }
+                            }else{
+                                Snackbar.make(view,"Your two passwords doesn't match,please try again", BaseTransientBottomBar.LENGTH_SHORT).show();
+                                password.setText("");
+                                confirmPassword.setText("");
+                            }
+
+                        } else {
+                            confirmPasswordTextInput.setError("Please confirm your password");
+                        }
+//                    }else {
+//                        passwordTextInput.setError("Password must be at least 6 characters");
+//                    }
+                }else{
+                        passwordTextInput.setError("Please enter a password");
+                    }
+                } else {
+                    emailTextInput.setError("Please enter your email");
+                }
+            } else {
+                nameTextInput.setError("Please enter your name");
+            }
     }
     public void alreadyMember() {
         if (mListener != null){
@@ -100,6 +138,6 @@ public class SignupFragment extends Fragment {
 
     public interface OnSignUpFragmentListener {
         void alreadyMember();
-        void signUp();
+        void signUp(User user);
     }
 }

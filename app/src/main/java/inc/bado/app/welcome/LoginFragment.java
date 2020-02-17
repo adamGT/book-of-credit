@@ -17,6 +17,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import inc.bado.app.R;
+import inc.bado.app.models.User;
 
 public class LoginFragment extends Fragment {
 
@@ -67,8 +68,20 @@ public class LoginFragment extends Fragment {
     }
 
     private void login() {
-        if (mListener != null){
-            mListener.login();
+        String userEmail = email.getText().toString();
+        String userPassword = password.getText().toString();
+        if (userEmail != null) {
+            if (userPassword != null) {
+                User user = new User(userEmail,userPassword);
+                if (mListener != null){
+                    mListener.login(user);
+                }
+
+            }else{
+                passwordTextInput.setError("Please enter a password");
+            }
+        } else {
+            emailTextInput.setError("Please enter your email");
         }
     }
     private void forgotPassword() {
@@ -102,6 +115,6 @@ public class LoginFragment extends Fragment {
     public interface OnWelcomeFragmentListener {
         void forgotPassword();
         void newUser();
-        void login();
+        void login(User user);
     }
 }

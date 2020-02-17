@@ -31,6 +31,8 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -149,6 +151,12 @@ public class CreditFragment extends Fragment implements
     }
 
     public void addCredit(){
+        // Write a message to the database
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference("shame");
+
+        myRef.setValue("Hello, World!");
+
         MaterialAlertDialogBuilder creditDialog = new MaterialAlertDialogBuilder(mContext);
         LayoutInflater inflater = getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.add_credit_layout, null);
