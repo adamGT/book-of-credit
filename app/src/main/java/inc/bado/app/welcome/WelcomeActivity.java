@@ -18,6 +18,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import inc.bado.app.R;
 import inc.bado.app.home.HomeActivity;
@@ -33,6 +35,8 @@ public class WelcomeActivity extends AppCompatActivity implements
 
     private Context mContext;
     private FirebaseAuth mAuth;
+    private FirebaseDatabase database;
+    private DatabaseReference myRef;
 
     private enum Fragments {
 
@@ -56,6 +60,7 @@ public class WelcomeActivity extends AppCompatActivity implements
     private Fragment currentActiveFragment;
     private LoginFragment loginFragment = new LoginFragment();
     private SignupFragment signupFragment = SignupFragment.newInstance();
+
     private ForgotPasswordFragment forgotPasswordFragment = ForgotPasswordFragment.newInstance();
     private VerificationFragment verificationFragment = VerificationFragment.newInstance();
 
@@ -72,6 +77,10 @@ public class WelcomeActivity extends AppCompatActivity implements
 
         // Initialize Firebase Auth
         mAuth = FirebaseAuth.getInstance();
+
+        database = FirebaseDatabase.getInstance();
+        myRef = database.getReference("shame");
+
 
 
         fm.beginTransaction()
@@ -216,8 +225,8 @@ public class WelcomeActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void signUp(User user) {
-        mAuth.createUserWithEmailAndPassword(user.getEmail(), user.getPassword())
+    public void signUp(User mUser) {
+        mAuth.createUserWithEmailAndPassword(mUser.getEmail(), mUser.getPassword())
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
@@ -225,6 +234,7 @@ public class WelcomeActivity extends AppCompatActivity implements
 
                             FirebaseUser user = mAuth.getCurrentUser();
                             updateUI(user);
+                            addUser(mUser);
 
                         } else {
                             // If sign in fails, display a message to the user.
@@ -274,21 +284,18 @@ public class WelcomeActivity extends AppCompatActivity implements
         }
     }
 
-    private void getUserData(){
+    private void addUser(User mUser){
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
             // Name, email address, and profile photo Url
+            String uID = user.getUid();
             String name = user.getDisplayName();
             String email = user.getEmail();
-            Uri photoUrl = user.getPhotoUrl();
+//            Uri photoUrl = user.getPhotoUrl();
 
-            // Check if user's email is verified
-            boolean emailVerified = user.isEmailVerified();
-
-            // The user's ID, unique to the Firebase project. Do NOT use this value to
-            // authenticate with your backend server, if you have one. Use
-            // FirebaseUser.getIdToken() instead.
-            String uid = user.getUid();
+            myRef.child("users").child(uID).child("Name").setValue(mUser.getName());
+            myRef.child("users").child(uID).child("Email").setValue(email);
+//            myRef.child("users").child(uID).child("Profile Picture").setValue(photoUrl);
         }
     }
 

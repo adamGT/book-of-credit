@@ -24,11 +24,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -42,8 +48,10 @@ import inc.bado.app.adapters.DebitListAdapter;
 import inc.bado.app.models.Credit;
 import inc.bado.app.models.Debit;
 import inc.bado.app.models.General;
+import inc.bado.app.models.User;
 import inc.bado.app.storage.debitStorage.DebitViewModel;
 import inc.bado.app.storage.generaStorage.GeneralViewModel;
+import inc.bado.app.storage.userStorage.UserViewModel;
 
 public class DebitFragment extends Fragment implements
         NavigationView.OnNavigationItemSelectedListener{
@@ -60,8 +68,14 @@ public class DebitFragment extends Fragment implements
     private DebitListAdapter adapter;
 
     private float totalDebitAmount;
+    private User userData;
+    private FirebaseDatabase database;
+
+    private DatabaseReference myRef;
+    private DatabaseReference myDebitRef;
 
     private List<Debit> debitList = new ArrayList<>();
+    private UserViewModel userViewModel;
     private DebitViewModel debitViewModel;
     private GeneralViewModel generalViewModel;
     private OnDebitInteractionListener mListener;
@@ -94,6 +108,10 @@ public class DebitFragment extends Fragment implements
 
         mContext = getContext();
 
+        // Write a message to the database
+        database = FirebaseDatabase.getInstance();
+        myDebitRef = database.getReference("shame/Debit");
+
         adapter = new DebitListAdapter(debitList, mContext);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(mLayoutManager);
@@ -102,23 +120,62 @@ public class DebitFragment extends Fragment implements
         recyclerView.setAdapter(adapter);
 
         loadDebitData();
+//        setUserData();
         setUpDrawer(view);
         return view;
     }
 
-    public void onButtonPressed() {
-        if (mListener != null) {
+    public void setUserData(User user) {
+
+//        this.userData = userViewModel.getAllUsers().getValue().get(0);
+
+        if(user != null){
+            this.userData = user;
+
+            Toast.makeText(mContext,userData.getName(),Toast.LENGTH_SHORT).show();
+        }else {
+            Toast.makeText(mContext,"user is null",Toast.LENGTH_SHORT).show();
         }
     }
 
+    private void fetchAllDebit(){
+        if (myDebitRef.child(userData.getuID()) != null){
+            myDebitRef.child(userData.getuID()).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    for (DataSnapshot dataSnap:dataSnapshot.getChildren()) {
+
+    //                    if(!new  String(""+dataSnap.child("Status").getValue()).equals("Pending")) {
+                            add("" + dataSnap.child("Title").getValue(),
+                                    "" + dataSnap.child("DebitBy").getValue(),
+                                    Float.parseFloat("" + dataSnap.child("Amount").getValue()) + 0);
+    //                    }
+                    }
+
+                }
+
+
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+        }
+
+    }
 
     public void loadDebitData(){
+        userViewModel = ViewModelProviders.of(this).get(UserViewModel.class);
         generalViewModel = ViewModelProviders.of(this).get(GeneralViewModel.class);
         debitViewModel = ViewModelProviders.of(this).get(DebitViewModel.class);
         debitViewModel.getAllDebits().observe(getViewLifecycleOwner(), new Observer<List<Debit>>() {
             @Override
             public void onChanged(List<Debit> debits) {
                 totalDebitAmount = 0;
+                if(debits.size() ==0){
+                    fetchAllDebit();
+                }
                 adapter.addItems(debits);
 
                 for (Debit debit:debits
@@ -131,38 +188,38 @@ public class DebitFragment extends Fragment implements
         });
     }
 
-    public void addDebit(){
-        MaterialAlertDialogBuilder debitDialog = new MaterialAlertDialogBuilder(mContext);
-        LayoutInflater inflater = getLayoutInflater();
-        View dialogView = inflater.inflate(R.layout.add_credit_layout, null);
-        debitDialog.setView(dialogView);
-
-        TextView titleText = dialogView.findViewById(R.id.dialog_title);
-        titleText.setText(mContext.getString(R.string.bado_debit_dialog_title));
-
-        TextInputLayout titleLayout = dialogView.findViewById(R.id.title_text_input);
-        EditText title = dialogView.findViewById(R.id.title_edit_text);
-        TextInputLayout nameLayout = dialogView.findViewById(R.id.name_text_input);
-        EditText name = dialogView.findViewById(R.id.name_edit_text);
-        TextInputLayout amountLayout = dialogView.findViewById(R.id.amount_text_input);
-        EditText amount = dialogView.findViewById(R.id.amount_edit_text);
-
-        MaterialButton add = dialogView.findViewById(R.id.add_button);
-
-        AlertDialog dialog = debitDialog.create();
-
-        add.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                add(title.getText().toString(),name.getText().toString(),Float.parseFloat(amount.getText().toString()));
-                dialog.dismiss();
-            }
-        });
-
-
-
-        dialog.show();
-    }
+//    public void addDebit(){
+//        MaterialAlertDialogBuilder debitDialog = new MaterialAlertDialogBuilder(mContext);
+//        LayoutInflater inflater = getLayoutInflater();
+//        View dialogView = inflater.inflate(R.layout.add_credit_layout, null);
+//        debitDialog.setView(dialogView);
+//
+//        TextView titleText = dialogView.findViewById(R.id.dialog_title);
+//        titleText.setText(mContext.getString(R.string.bado_debit_dialog_title));
+//
+//        TextInputLayout titleLayout = dialogView.findViewById(R.id.title_text_input);
+//        EditText title = dialogView.findViewById(R.id.title_edit_text);
+//        TextInputLayout nameLayout = dialogView.findViewById(R.id.name_text_input);
+//        EditText name = dialogView.findViewById(R.id.name_edit_text);
+//        TextInputLayout amountLayout = dialogView.findViewById(R.id.amount_text_input);
+//        EditText amount = dialogView.findViewById(R.id.amount_edit_text);
+//
+//        MaterialButton add = dialogView.findViewById(R.id.add_button);
+//
+//        AlertDialog dialog = debitDialog.create();
+//
+//        add.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                add(title.getText().toString(),name.getText().toString(),Float.parseFloat(amount.getText().toString()));
+//                dialog.dismiss();
+//            }
+//        });
+//
+//
+//
+//        dialog.show();
+//    }
 
     public void add(String title,String name,float amount){
         Date createdAt = Calendar.getInstance().getTime();

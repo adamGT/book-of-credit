@@ -10,17 +10,20 @@ import androidx.room.TypeConverters;
 import inc.bado.app.models.Credit;
 import inc.bado.app.models.Debit;
 import inc.bado.app.models.General;
+import inc.bado.app.models.User;
 import inc.bado.app.storage.creditStorage.CreditDao;
 import inc.bado.app.storage.debitStorage.DebitDao;
 import inc.bado.app.storage.generaStorage.GeneralDao;
+import inc.bado.app.storage.userStorage.UserDao;
 import inc.bado.app.utils.DateTypeConverter;
 
-@Database(entities = {Debit.class, Credit.class, General.class}, version = 1, exportSchema = false)
+@Database(entities = {Debit.class, Credit.class, General.class, User.class}, version = 1, exportSchema = false)
 @TypeConverters(DateTypeConverter.class)
 public abstract class AppDatabase extends RoomDatabase {
 
     private static AppDatabase instance;
 
+    public abstract UserDao userDao();
     public abstract DebitDao debitDao();
     public abstract CreditDao creditDao();
     public abstract GeneralDao generalDao();

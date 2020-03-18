@@ -46,32 +46,58 @@
     </com.google.android.material.textfield.TextInputLayout>
 
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/name_text_input"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+<!--    <com.google.android.material.textfield.TextInputLayout-->
+<!--        android:id="@+id/name_text_input"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginStart="32dp"-->
+<!--        android:layout_marginTop="8dp"-->
+<!--        android:layout_marginEnd="32dp"-->
+<!--        android:layout_marginBottom="8dp"-->
+<!--        android:minHeight="20dp"-->
+<!--        android:hint="@string/bado_hint_name"-->
+<!--        android:background="@android:color/transparent"-->
+<!--        app:boxBackgroundColor="@android:color/transparent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/title_text_input"-->
+<!--        app:layout_constraintVertical_bias="0">-->
+
+<!--        <com.google.android.material.textfield.TextInputEditText-->
+<!--            android:id="@+id/name_edit_text"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:background="@android:color/transparent"-->
+<!--            android:textSize="16sp"-->
+<!--            android:lines="1"-->
+<!--            android:maxLines="1" />-->
+<!--    </com.google.android.material.textfield.TextInputLayout>-->
+<!--    <AutoCompleteTextView-->
+<!--        android:id="@+id/name_auto"-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="60dp"-->
+<!--        android:layout_marginStart="32dp"-->
+<!--        android:layout_marginTop="8dp"-->
+<!--        android:layout_marginEnd="32dp"-->
+<!--        android:layout_marginBottom="8dp"-->
+<!--        android:minHeight="20dp"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/title_text_input"-->
+<!--        app:layout_constraintVertical_bias="0"-->
+<!--        />-->
+    <AutoCompleteTextView
+        android:id="@+id/creditor_user"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="32dp"
+        android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
-        android:minHeight="20dp"
-        android:hint="@string/bado_hint_name"
-        android:background="@android:color/transparent"
-        app:boxBackgroundColor="@android:color/transparent"
+        android:hint="@string/bado_credit"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/title_text_input"
-        app:layout_constraintVertical_bias="0">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/name_edit_text"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:textSize="16sp"
-            android:lines="1"
-            android:maxLines="1" />
-    </com.google.android.material.textfield.TextInputLayout>
+        app:layout_constraintTop_toBottomOf="@+id/title_text_input"/>
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/amount_text_input"
@@ -85,7 +111,7 @@
         app:errorEnabled="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/name_text_input"
+        app:layout_constraintTop_toBottomOf="@+id/creditor_user"
         app:passwordToggleEnabled="true"
         app:passwordToggleTint="@color/white">
 

@@ -6,20 +6,31 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.ViewModelProviders;
 
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import inc.bado.app.R;
+import inc.bado.app.models.User;
+import inc.bado.app.storage.userStorage.UserViewModel;
 
 public class HomeActivity extends AppCompatActivity implements
         BottomNavigationView.OnNavigationItemSelectedListener,
@@ -61,6 +72,14 @@ public class HomeActivity extends AppCompatActivity implements
     private Fragment currentActiveFragment;
     private Context mContext;
 
+
+    private UserViewModel userViewModel;
+
+    private FirebaseDatabase database;
+    private DatabaseReference myRef;
+    private FirebaseUser user;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,6 +89,30 @@ public class HomeActivity extends AppCompatActivity implements
         fm = getSupportFragmentManager();
         mContext = getApplicationContext();
 
+        userViewModel = ViewModelProviders.of(this).get(UserViewModel.class);
+
+        user = FirebaseAuth.getInstance().getCurrentUser();
+        database = FirebaseDatabase.getInstance();
+        myRef = database.getReference("shame");
+
+        if (user !=null) {
+            myRef.child("users").child(user.getUid()).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                    Toast.makeText(mContext,""+dataSnapshot.child("Name").getValue(),Toast.LENGTH_LONG).show();
+                    User userData = new User(user.getUid(),""+dataSnapshot.child("Name").getValue(),""+dataSnapshot.child("Email").getValue(),"dontshow");
+//                    userViewModel.insert(userData);
+                    debitFragment.setUserData(userData);
+                    creditFragment.setUserData(userData);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+
+        }
 
         navigation.setOnNavigationItemSelectedListener(HomeActivity.this);
 
@@ -80,6 +123,7 @@ public class HomeActivity extends AppCompatActivity implements
                 .add(R.id.contentLayout, generalFragment, HomeFragments.General.name)
                 .hide(generalFragment)
                 .commit();
+
         fm.beginTransaction()
                 .add(R.id.contentLayout, debitFragment, HomeFragments.Debit.name)
                 .hide(debitFragment)
@@ -133,9 +177,10 @@ public class HomeActivity extends AppCompatActivity implements
     public void onAddClicked(){
         if(currentActiveFragment == creditFragment){
             creditFragment.addCredit();
-        }else if(currentActiveFragment == debitFragment){
-            debitFragment.addDebit();
         }
+//        else if(currentActiveFragment == debitFragment){
+//            debitFragment.addDebit();
+//        }
     }
 
     public void showHomeFragments(){
@@ -153,7 +198,9 @@ public class HomeActivity extends AppCompatActivity implements
 
     @Override
     public void onDrawerClosed(){
-        addButton.setVisibility(View.GONE);
+        if(currentActiveFragment == creditFragment){
+            addButton.setVisibility(View.VISIBLE);
+        }
         navigationLayout.setVisibility(View.VISIBLE);
     }
 
@@ -178,7 +225,7 @@ public class HomeActivity extends AppCompatActivity implements
 
             case R.id.navigation_debit:
 
-                addButton.setVisibility(View.VISIBLE);
+                addButton.setVisibility(View.GONE);
 
                 fm.beginTransaction()
                         .hide(currentActiveFragment)

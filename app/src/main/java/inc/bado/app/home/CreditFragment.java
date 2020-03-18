@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
@@ -23,32 +24,46 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import de.hdodenhof.circleimageview.CircleImageView;
 import inc.bado.app.R;
 import inc.bado.app.adapters.CreditListAdapter;
+import inc.bado.app.adapters.CustomAutoCompleteAdapter;
 import inc.bado.app.models.Credit;
 import inc.bado.app.models.General;
+import inc.bado.app.models.User;
 import inc.bado.app.storage.creditStorage.CreditViewModel;
 import inc.bado.app.storage.generaStorage.GeneralViewModel;
+import inc.bado.app.storage.userStorage.UserViewModel;
 
 public class CreditFragment extends Fragment implements
         NavigationView.OnNavigationItemSelectedListener{
@@ -61,12 +76,23 @@ public class CreditFragment extends Fragment implements
     @BindView(R.id.tot_credit) TextView totalCredit;
 
     private View view;
+//    private boolean haveData;
     private Context mContext;
     private CreditListAdapter adapter;
 
     private float totalCreditAmount;
+    private User userData;
+    private User creditedUser;
+    private FirebaseDatabase database;
+
+    private DatabaseReference myRef;
+    private DatabaseReference myCreditRef;
+    private DatabaseReference myDebitRef;
+    List<User> users = new ArrayList<>();
+    List<String> names = new ArrayList<>();
 
     private List<Credit> creditList = new ArrayList<>();
+    private UserViewModel userViewModel;
     private CreditViewModel creditViewModel;
     private GeneralViewModel generalViewModel;
     private OnCreditInteractionListener mListener;
@@ -94,8 +120,13 @@ public class CreditFragment extends Fragment implements
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_credit, container, false);
         ButterKnife.bind(this, view);
-
         mContext = getContext();
+
+        // Write a message to the database
+        database = FirebaseDatabase.getInstance();
+        myRef = database.getReference("shame");
+        myCreditRef = database.getReference("shame/Credit");
+        myDebitRef = database.getReference("shame/Debit");
 
         adapter = new CreditListAdapter(creditList,mContext);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getContext());
@@ -121,23 +152,92 @@ public class CreditFragment extends Fragment implements
             }
         }).attachToRecyclerView(recyclerView);
 
+        fetchUserList();
         loadCreditData();
+//        setUserData();
         setUpDrawer(view);
         return view;
     }
 
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
+    public void setUserData(User user) {
+
+//        this.userData = userViewModel.getAllUsers().getValue().get(0);
+
+        if(user != null){
+            this.userData = user;
+            Toast.makeText(mContext,userData.getName(),Toast.LENGTH_SHORT).show();
+
+        }else {
+            Toast.makeText(mContext,"user is null",Toast.LENGTH_SHORT).show();
         }
     }
 
+    private void fetchUserList(){
+        myRef.child("users").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot dataSnap:dataSnapshot.getChildren()) {
+//                    Toast.makeText(mContext,""+dataSnap.child("Name").getValue(),Toast.LENGTH_SHORT).show();
+                    names.add(""+dataSnap.child("Name").getValue());
+                    users.add(new User(dataSnap.getKey(),""+dataSnap.child("Name").getValue(),""+dataSnap.child("Email").getValue(),null));
+
+                }
+
+                if(names != null){
+//                    Toast.makeText(mContext,""+names.get(0),Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(mContext,"No users right now",Toast.LENGTH_SHORT).show();
+                }
+            }
+
+
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void fetchAllCredit(){
+        myCreditRef.child(userData.getuID()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                List<Credit> credits = new ArrayList<>();
+                for (DataSnapshot dataSnap:dataSnapshot.getChildren()) {
+//                    if(!new  String(""+dataSnap.child("Status").getValue()).equals("Pending")) {
+                        add("" + dataSnap.child("Title").getValue(),
+                                "" + dataSnap.child("CreditedTo").getValue(),
+                                Float.parseFloat("" + dataSnap.child("Amount").getValue()) + 0,
+                                new Date(Long.valueOf("" + dataSnap.child("CreditedAt").getValue())));
+//                    }
+                }
+
+            }
+
+
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+//        return haveData;
+
+    }
+
     public void loadCreditData(){
+        userViewModel = ViewModelProviders.of(this).get(UserViewModel.class);
         generalViewModel = ViewModelProviders.of(this).get(GeneralViewModel.class);
         creditViewModel = ViewModelProviders.of(this).get(CreditViewModel.class);
         creditViewModel.getAllCredits().observe(getViewLifecycleOwner(), new Observer<List<Credit>>() {
             @Override
             public void onChanged(List<Credit> credits) {
                 totalCreditAmount = 0;
+                if(credits.size() == 0 ){
+                    fetchAllCredit();
+                }
+
                 adapter.addItems(credits);
 
                 for (Credit credit:credits
@@ -151,11 +251,6 @@ public class CreditFragment extends Fragment implements
     }
 
     public void addCredit(){
-        // Write a message to the database
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("shame");
-
-        myRef.setValue("Hello, World!");
 
         MaterialAlertDialogBuilder creditDialog = new MaterialAlertDialogBuilder(mContext);
         LayoutInflater inflater = getLayoutInflater();
@@ -167,33 +262,70 @@ public class CreditFragment extends Fragment implements
 
         TextInputLayout titleLayout = dialogView.findViewById(R.id.title_text_input);
         EditText title = dialogView.findViewById(R.id.title_edit_text);
-        TextInputLayout nameLayout = dialogView.findViewById(R.id.name_text_input);
-        EditText name = dialogView.findViewById(R.id.name_edit_text);
+        AutoCompleteTextView creditor = dialogView.findViewById(R.id.creditor_user);
         TextInputLayout amountLayout = dialogView.findViewById(R.id.amount_text_input);
         EditText amount = dialogView.findViewById(R.id.amount_edit_text);
 
         MaterialButton add = dialogView.findViewById(R.id.add_button);
 
-
         AlertDialog dialog = creditDialog.create();
+
+
+        CustomAutoCompleteAdapter adapter = new CustomAutoCompleteAdapter(mContext,users);
+        creditor.setAdapter(adapter);
 
         add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                add(title.getText().toString(),name.getText().toString(),Float.parseFloat(amount.getText().toString()));
-                dialog.dismiss();
+                long createdAtMills = Calendar.getInstance().getTimeInMillis();
+                Date createdAt = Calendar.getInstance().getTime();
+                if(names.contains(creditor.getText().toString().trim())) {
+                    creditedUser = users.get(names.indexOf(creditor.getText().toString().trim()));
+                    if(!amount.getText().toString().trim().isEmpty()) {
+                        if(!title.getText().toString().trim().isEmpty()) {
+                            addToFirebase(title.getText().toString().trim(), creditor.getText().toString().trim(), amount.getText().toString().trim(),""+createdAtMills);
+                            dialog.dismiss();
+                        }else {
+                            titleLayout.setError("Please Enter a Title for the credit");
+                        }
+                    }else {
+                        amountLayout.setError("Please Enter the amount of the credit");
+                    }
+                }
+                else {
+                    Toast.makeText(mContext,"Please enter a correct user to credit to",Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
         dialog.show();
     }
 
-    public void add(String title, String name, float amount){
-        Date createdAt = Calendar.getInstance().getTime();
+    public void add(String title, String name, float amount,Date createdAt){
         creditViewModel.insert(new Credit(title,name, amount,createdAt));
         generalViewModel.insert(new General(title,name, amount,createdAt,true));
-//        creditList.add(new Credit(title,name, amount,createdAt));
-//        adapter.notifyDataSetChanged();
+    }
+
+    private void addToFirebase(String title, String name, String amount,String createdAtMills){
+        DatabaseReference creditRef = myCreditRef.child(userData.getuID()).push();
+        Map<String, String> credit = new HashMap<String, String>();
+        credit.put("Title", title);
+        credit.put("Amount", amount);
+        credit.put("CreditedTo", name);
+        credit.put("CreditedAt", createdAtMills);
+        credit.put("Status", "Pending");
+        creditRef.setValue(credit);
+
+
+        DatabaseReference debitRef = myDebitRef.child(creditedUser.getuID()).push();
+        Map<String, String> debit = new HashMap<String, String>();
+        debit.put("Title", title);
+        debit.put("Amount", amount);
+        debit.put("DebitBy", userData.getName());
+        debit.put("DebitedAt", createdAtMills);
+        debit.put("Status", "Pending");
+        debitRef.setValue(debit);
+
     }
 
     private void setUpDrawer(View view){
@@ -207,7 +339,9 @@ public class CreditFragment extends Fragment implements
         NavigationView navigationView = view.findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         View headerView = navigationView.getHeaderView(0);
+        CircleImageView navUserImage = (CircleImageView) headerView.findViewById(R.id.nav_image);
         TextView navUsername = (TextView) headerView.findViewById(R.id.nav_name);
+        TextView navUserEmail = (TextView) headerView.findViewById(R.id.nav_email);
 
         drawer.addDrawerListener(new DrawerLayout.DrawerListener() {
             @Override
