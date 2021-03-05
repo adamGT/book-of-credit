@@ -18,6 +18,8 @@ public class User {
     private String email;
     @ColumnInfo(name = "user_password")
     private String password;
+    @ColumnInfo(name = "user_token")
+    private String token;
 
 
     @Ignore
@@ -27,10 +29,11 @@ public class User {
         this.password = password;
     }
 
-    public User(String uID,String name, String email, String password) {
+    public User(String uID,String name, String email, String token, String password) {
         this.uID = uID;
         this.name = name;
         this.email = email;
+        this.token = token;
         this.password = password;
     }
 
@@ -64,7 +67,7 @@ public class User {
         return password;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public String getToken() {
+        return token;
     }
 }

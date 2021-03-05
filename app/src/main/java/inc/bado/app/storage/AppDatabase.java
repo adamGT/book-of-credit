@@ -17,7 +17,7 @@ import inc.bado.app.storage.generaStorage.GeneralDao;
 import inc.bado.app.storage.userStorage.UserDao;
 import inc.bado.app.utils.DateTypeConverter;
 
-@Database(entities = {Debit.class, Credit.class, General.class, User.class}, version = 1, exportSchema = false)
+@Database(entities = {Debit.class, Credit.class, General.class, User.class}, version = 2, exportSchema = false)
 @TypeConverters(DateTypeConverter.class)
 public abstract class AppDatabase extends RoomDatabase {
 

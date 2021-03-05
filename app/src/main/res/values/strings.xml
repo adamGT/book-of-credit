@@ -7,6 +7,8 @@
     <string name="bado_hint_name">Name</string>
     <string name="bado_hint_password">Password</string>
     <string name="bado_add">Add</string>
+    <string name="bado_logout">Logout</string>
+    <string name="bado_version">Version 1.0</string>
 
 
     <!--    Login-->

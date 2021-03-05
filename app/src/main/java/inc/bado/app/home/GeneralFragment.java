@@ -1,6 +1,7 @@
 package inc.bado.app.home;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -22,7 +23,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
@@ -35,10 +38,10 @@ import inc.bado.app.R;
 import inc.bado.app.adapters.GeneralListAdapter;
 import inc.bado.app.models.Debit;
 import inc.bado.app.models.General;
+import inc.bado.app.models.User;
 import inc.bado.app.storage.generaStorage.GeneralViewModel;
 
-public class GeneralFragment extends Fragment implements
-        NavigationView.OnNavigationItemSelectedListener{
+public class GeneralFragment extends Fragment {
 
 
     @BindView(R.id.app_bar) Toolbar toolbar;
@@ -49,8 +52,11 @@ public class GeneralFragment extends Fragment implements
 
     private View view;
     private Context mContext;
-    private GeneralListAdapter adapter;
+    private TextView navUsername;
 
+    private User userData;
+    private TextView navUserEmail;
+    private GeneralListAdapter adapter;
     private float totalGeneralAmount;
 
     private List<General> generalList = new ArrayList<>();
@@ -86,7 +92,6 @@ public class GeneralFragment extends Fragment implements
 
         mContext = getContext();
 
-
         adapter = new GeneralListAdapter(generalList,mContext);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(mLayoutManager);
@@ -99,11 +104,20 @@ public class GeneralFragment extends Fragment implements
         return view;
     }
 
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
+    public void setUserData(User user) {
+
+        if(user != null){
+            this.userData = user;
+//            Toast.makeText(mContext,userData.getName(),Toast.LENGTH_SHORT).show();
+
+            navUsername.setText(userData.getName());
+            navUserEmail.setText(userData.getEmail());
+
+
+        }else {
+            Toast.makeText(mContext,"user is null",Toast.LENGTH_SHORT).show();
         }
     }
-
 
     public void loadGeneralData(){
         generalViewModel = ViewModelProviders.of(this).get(GeneralViewModel.class);
@@ -138,13 +152,15 @@ public class GeneralFragment extends Fragment implements
         final ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 getActivity(), drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
+
         toggle.syncState();
 
 
         NavigationView navigationView = view.findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+
         View headerView = navigationView.getHeaderView(0);
-        TextView navUsername = (TextView) headerView.findViewById(R.id.nav_name);
+        navUsername = (TextView) headerView.findViewById(R.id.nav_name);
+        navUserEmail = (TextView) headerView.findViewById(R.id.nav_email);
 
         drawer.addDrawerListener(new DrawerLayout.DrawerListener() {
             @Override
@@ -190,28 +206,23 @@ public class GeneralFragment extends Fragment implements
     }
 
     private void setupDrawerContent(NavigationView navigationView) {
-        //revision: this don't works, use setOnChildClickListener() and setOnGroupClickListener() above instead
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
                         menuItem.setChecked(true);
                         drawer.closeDrawers();
+
+                        int id = menuItem.getItemId();
+
+                        if (id == R.id.nav_logout) {
+                            logOut();
+                        }
+
                         return true;
                     }
                 });
     }
-
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle beezcovery_navigation view item clicks here.
-        int id = item.getItemId();
-
-        DrawerLayout drawer = view.findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
-    }
-
 
     public boolean closeDrawer(){
 
@@ -223,6 +234,28 @@ public class GeneralFragment extends Fragment implements
         return false;
     }
 
+    private void logOut(){
+        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(getContext());
+
+        dialogBuilder.setTitle("Log Out").setMessage("Are you sure you want to logout?");
+        dialogBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                mListener.onLogout();
+
+            }
+        });
+        dialogBuilder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        dialogBuilder.show();
+
+    }
 
     @Override
     public void onAttach(Context context) {
@@ -245,5 +278,6 @@ public class GeneralFragment extends Fragment implements
     public interface OnGeneralInteractionListener {
         void onDrawerOpened();
         void onDrawerClosed();
+        void onLogout();
     }
 }

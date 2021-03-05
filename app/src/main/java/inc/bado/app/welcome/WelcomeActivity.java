@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -32,6 +33,7 @@ public class WelcomeActivity extends AppCompatActivity implements
         VerificationFragment.OnVerificationListener{
 
     private static final String TAG = "WelcomeActivity";
+    public static final String INTENT_EXTRA_AUTH = "AUTH";
 
     private Context mContext;
     private FirebaseAuth mAuth;
@@ -77,10 +79,8 @@ public class WelcomeActivity extends AppCompatActivity implements
 
         // Initialize Firebase Auth
         mAuth = FirebaseAuth.getInstance();
-
         database = FirebaseDatabase.getInstance();
         myRef = database.getReference("shame");
-
 
 
         fm.beginTransaction()
@@ -184,32 +184,26 @@ public class WelcomeActivity extends AppCompatActivity implements
 
     @Override
     public void login(User user) {
-//        Toast.makeText(mContext,"Under Construction",Toast.LENGTH_LONG).show();
 
-        //start the home page
-//        Intent intent = new Intent(WelcomeActivity.this, HomeActivity.class);
-//        finishAffinity();
-//        startActivity(intent);
+    mAuth.signInWithEmailAndPassword(user.getEmail(), user.getPassword())
+            .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+                    if (task.isSuccessful()) {
 
-        mAuth.signInWithEmailAndPassword(user.getEmail(), user.getPassword())
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        updateUI(user);
 
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            updateUI(user);
-
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            Log.w(TAG, "signInWithEmail:failure", task.getException());
-                            Toast.makeText(mContext, "failure: "+task.getException(),
-                                    Toast.LENGTH_SHORT).show();
-                            updateUI(null);
-                        }
-
+                    } else {
+                        // If sign in fails, display a message to the user.
+                        Log.w(TAG, "signInWithEmail:failure", task.getException());
+                        Toast.makeText(mContext, "failure: "+task.getException(),
+                                Toast.LENGTH_LONG).show();
+                        updateUI(null);
                     }
-                });
+
+                }
+            });
 
     }
 

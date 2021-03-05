@@ -59,7 +59,7 @@ public class ViewHolder extends RecyclerView.ViewHolder {
 
         final Credit credit = creditList.get(position);
         holder.title.setText(credit.getTitle());
-        holder.name.setText("From "+credit.getName());
+        holder.name.setText("To "+credit.getName());
         holder.amount.setText("$ "+credit.getAmount());
         holder.amount.setTextColor(mContext.getResources().getColor(R.color.colorAccent));
 

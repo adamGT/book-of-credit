@@ -3,12 +3,14 @@ package inc.bado.app.welcome;
 import android.content.Context;
 import android.os.Bundle;
 
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.google.android.material.button.MaterialButton;
@@ -25,9 +27,13 @@ public class LoginFragment extends Fragment {
     @BindView(R.id.password_text_input) TextInputLayout passwordTextInput;
     @BindView(R.id.email_edit_text) EditText email;
     @BindView(R.id.password_edit_text) EditText password;
+
     @BindView(R.id.login_button) MaterialButton loginButton;
     @BindView(R.id.forgot_password_tv) TextView forgotPassword;
     @BindView(R.id.new_sign_up) TextView newMember;
+
+    @BindView(R.id.progress_bar) ProgressBar progressBar;
+    @BindView(R.id.progress_bar_card) CardView progressBarCard;
 
     private Context mContext;
     private OnWelcomeFragmentListener mListener;
@@ -57,6 +63,8 @@ public class LoginFragment extends Fragment {
         ButterKnife.bind(this, view);
 
         mContext = getContext();
+//        progressBar.setVisibility(View.INVISIBLE);
+//        progressBarCard.setVisibility(View.INVISIBLE);
 
 
         loginButton.setOnClickListener(v -> login());
@@ -75,6 +83,8 @@ public class LoginFragment extends Fragment {
                 User user = new User(userEmail,userPassword);
                 if (mListener != null){
                     mListener.login(user);
+                    progressBar.setVisibility(View.VISIBLE);
+                    progressBarCard.setVisibility(View.VISIBLE);
                 }
 
             }else{
@@ -113,8 +123,8 @@ public class LoginFragment extends Fragment {
     }
 
     public interface OnWelcomeFragmentListener {
-        void forgotPassword();
         void newUser();
+        void forgotPassword();
         void login(User user);
     }
 }

@@ -1,6 +1,7 @@
 package inc.bado.app.home;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -21,6 +22,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -65,8 +67,7 @@ import inc.bado.app.storage.creditStorage.CreditViewModel;
 import inc.bado.app.storage.generaStorage.GeneralViewModel;
 import inc.bado.app.storage.userStorage.UserViewModel;
 
-public class CreditFragment extends Fragment implements
-        NavigationView.OnNavigationItemSelectedListener{
+public class CreditFragment extends Fragment{
 
 
     @BindView(R.id.app_bar) Toolbar toolbar;
@@ -76,8 +77,9 @@ public class CreditFragment extends Fragment implements
     @BindView(R.id.tot_credit) TextView totalCredit;
 
     private View view;
-//    private boolean haveData;
     private Context mContext;
+    private TextView navUsername;
+    private TextView navUserEmail;
     private CreditListAdapter adapter;
 
     private float totalCreditAmount;
@@ -88,6 +90,7 @@ public class CreditFragment extends Fragment implements
     private DatabaseReference myRef;
     private DatabaseReference myCreditRef;
     private DatabaseReference myDebitRef;
+    private DatabaseReference myNotificationRef;
     List<User> users = new ArrayList<>();
     List<String> names = new ArrayList<>();
 
@@ -122,11 +125,15 @@ public class CreditFragment extends Fragment implements
         ButterKnife.bind(this, view);
         mContext = getContext();
 
+
+        setHasOptionsMenu(true);
+
         // Write a message to the database
         database = FirebaseDatabase.getInstance();
         myRef = database.getReference("shame");
         myCreditRef = database.getReference("shame/Credit");
         myDebitRef = database.getReference("shame/Debit");
+        myNotificationRef = database.getReference("shame/Notifications");
 
         adapter = new CreditListAdapter(creditList,mContext);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getContext());
@@ -154,19 +161,19 @@ public class CreditFragment extends Fragment implements
 
         fetchUserList();
         loadCreditData();
-//        setUserData();
         setUpDrawer(view);
         return view;
     }
 
+
     public void setUserData(User user) {
-
-//        this.userData = userViewModel.getAllUsers().getValue().get(0);
-
         if(user != null){
-            this.userData = user;
-            Toast.makeText(mContext,userData.getName(),Toast.LENGTH_SHORT).show();
 
+            this.userData = user;
+            navUsername.setText(userData.getName());
+            navUserEmail.setText(userData.getEmail());
+
+            Toast.makeText(mContext,"Welcome "+userData.getName(),Toast.LENGTH_SHORT).show();
         }else {
             Toast.makeText(mContext,"user is null",Toast.LENGTH_SHORT).show();
         }
@@ -179,7 +186,11 @@ public class CreditFragment extends Fragment implements
                 for (DataSnapshot dataSnap:dataSnapshot.getChildren()) {
 //                    Toast.makeText(mContext,""+dataSnap.child("Name").getValue(),Toast.LENGTH_SHORT).show();
                     names.add(""+dataSnap.child("Name").getValue());
-                    users.add(new User(dataSnap.getKey(),""+dataSnap.child("Name").getValue(),""+dataSnap.child("Email").getValue(),null));
+                    users.add(new User(dataSnap.getKey(),
+                            ""+dataSnap.child("Name").getValue(),
+                            ""+dataSnap.child("Email").getValue(),
+                            ""+dataSnap.child("Token").getValue(),
+                            null));
 
                 }
 
@@ -200,29 +211,32 @@ public class CreditFragment extends Fragment implements
     }
 
     private void fetchAllCredit(){
-        myCreditRef.child(userData.getuID()).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                List<Credit> credits = new ArrayList<>();
-                for (DataSnapshot dataSnap:dataSnapshot.getChildren()) {
+        if (userData == null){
+            Toast.makeText(mContext,"user data null on credit",Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (myCreditRef.child(userData.getuID()) != null) {
+            myCreditRef.child(userData.getuID()).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    for (DataSnapshot dataSnap : dataSnapshot.getChildren()) {
 //                    if(!new  String(""+dataSnap.child("Status").getValue()).equals("Pending")) {
                         add("" + dataSnap.child("Title").getValue(),
                                 "" + dataSnap.child("CreditedTo").getValue(),
                                 Float.parseFloat("" + dataSnap.child("Amount").getValue()) + 0,
                                 new Date(Long.valueOf("" + dataSnap.child("CreditedAt").getValue())));
 //                    }
+                    }
                 }
 
-            }
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-//        return haveData;
+                }
+            });
+        }else {
+            Toast.makeText(mContext,"Error fetching your credit list: its Null",Toast.LENGTH_SHORT).show();
+        }
 
     }
 
@@ -248,6 +262,23 @@ public class CreditFragment extends Fragment implements
                 totalCredit.setText(""+totalCreditAmount);
             }
         });
+    }
+
+
+    private static String changePinNumberFormat(String pinNumber){
+
+        String pin= pinNumber;
+        if(pin.equals("")){
+            return pin;
+        }else {
+
+            if (pin.length() >= 11) {
+                pin = pin.substring(0, 3) + " " + pin.substring(3, 6) + " " + pin.substring(6, 10) + " " + pin.substring(10, pin.length());
+            } else {
+                pin = "ERROR";
+            }
+            return pin;
+        }
     }
 
     public void addCredit(){
@@ -278,12 +309,20 @@ public class CreditFragment extends Fragment implements
             @Override
             public void onClick(View v) {
                 long createdAtMills = Calendar.getInstance().getTimeInMillis();
-                Date createdAt = Calendar.getInstance().getTime();
-                if(names.contains(creditor.getText().toString().trim())) {
-                    creditedUser = users.get(names.indexOf(creditor.getText().toString().trim()));
+                if(userExist(creditor.getText().toString().trim())){
                     if(!amount.getText().toString().trim().isEmpty()) {
                         if(!title.getText().toString().trim().isEmpty()) {
-                            addToFirebase(title.getText().toString().trim(), creditor.getText().toString().trim(), amount.getText().toString().trim(),""+createdAtMills);
+
+                            Map<String, String> credit = new HashMap<String, String>();
+                            credit.put("Title", title.getText().toString().trim());
+                            credit.put("Amount", amount.getText().toString().trim());
+                            credit.put("CreditedTo", creditedUser.getName());
+                            credit.put("CreditedAt", ""+createdAtMills);
+                            credit.put("Status", "Pending");
+
+                            addCredit(credit);
+                            addToNotification(amount.getText().toString().trim(),""+createdAtMills);
+                            Toast.makeText(mContext,"a confirmation has been sent to "+creditedUser.getName(),Toast.LENGTH_SHORT).show();
                             dialog.dismiss();
                         }else {
                             titleLayout.setError("Please Enter a Title for the credit");
@@ -291,9 +330,8 @@ public class CreditFragment extends Fragment implements
                     }else {
                         amountLayout.setError("Please Enter the amount of the credit");
                     }
-                }
-                else {
-                    Toast.makeText(mContext,"Please enter a correct user to credit to",Toast.LENGTH_SHORT).show();
+                }else {
+                        Toast.makeText(mContext,"Please enter a correct user to credit to",Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -301,47 +339,55 @@ public class CreditFragment extends Fragment implements
         dialog.show();
     }
 
+    private boolean userExist(String userName){
+        boolean exists = false;
+        for (User user:users) {
+            if(user.getName().equals(userName)){
+                creditedUser = user;
+                exists = true;
+            }
+        }
+        return exists;
+    }
+
+
     public void add(String title, String name, float amount,Date createdAt){
         creditViewModel.insert(new Credit(title,name, amount,createdAt));
         generalViewModel.insert(new General(title,name, amount,createdAt,true));
     }
 
-    private void addToFirebase(String title, String name, String amount,String createdAtMills){
+    private void addCredit(Map credit){
         DatabaseReference creditRef = myCreditRef.child(userData.getuID()).push();
-        Map<String, String> credit = new HashMap<String, String>();
-        credit.put("Title", title);
-        credit.put("Amount", amount);
-        credit.put("CreditedTo", name);
-        credit.put("CreditedAt", createdAtMills);
-        credit.put("Status", "Pending");
         creditRef.setValue(credit);
+    }
 
-
-        DatabaseReference debitRef = myDebitRef.child(creditedUser.getuID()).push();
-        Map<String, String> debit = new HashMap<String, String>();
-        debit.put("Title", title);
-        debit.put("Amount", amount);
-        debit.put("DebitBy", userData.getName());
-        debit.put("DebitedAt", createdAtMills);
-        debit.put("Status", "Pending");
-        debitRef.setValue(debit);
+    private void addToNotification(String amount,String createdAtMills){
+        DatabaseReference notificationRef = myNotificationRef.push();
+        Map<String, String> credit = new HashMap<String, String>();
+        credit.put("Creditor", userData.getName());
+        credit.put("Amount", amount);
+        credit.put("CreditedTo", creditedUser.getuID());
+        credit.put("token", creditedUser.getToken());
+        credit.put("RequestedAt", createdAtMills);
+        notificationRef.setValue(credit);
 
     }
+
 
     private void setUpDrawer(View view){
 
         final ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 getActivity(), drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
+
         toggle.syncState();
 
 
         NavigationView navigationView = view.findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+
         View headerView = navigationView.getHeaderView(0);
-        CircleImageView navUserImage = (CircleImageView) headerView.findViewById(R.id.nav_image);
-        TextView navUsername = (TextView) headerView.findViewById(R.id.nav_name);
-        TextView navUserEmail = (TextView) headerView.findViewById(R.id.nav_email);
+        navUsername = (TextView) headerView.findViewById(R.id.nav_name);
+        navUserEmail = (TextView) headerView.findViewById(R.id.nav_email);
 
         drawer.addDrawerListener(new DrawerLayout.DrawerListener() {
             @Override
@@ -394,21 +440,17 @@ public class CreditFragment extends Fragment implements
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
                         menuItem.setChecked(true);
                         drawer.closeDrawers();
+
+                        int id = menuItem.getItemId();
+
+                        if (id == R.id.nav_logout) {
+                            logOut();
+                        }
+
                         return true;
                     }
                 });
     }
-
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle beezcovery_navigation view item clicks here.
-        int id = item.getItemId();
-
-        DrawerLayout drawer = view.findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
-    }
-
 
     public boolean closeDrawer(){
 
@@ -420,7 +462,30 @@ public class CreditFragment extends Fragment implements
         return false;
     }
 
+    private void logOut(){
 
+
+        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(getContext());
+
+        dialogBuilder.setTitle("Log Out").setMessage("Are you sure you want to logout?");
+        dialogBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                mListener.onLogout();
+
+            }
+        });
+        dialogBuilder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        dialogBuilder.show();
+
+    }
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -439,7 +504,9 @@ public class CreditFragment extends Fragment implements
     }
 
     public interface OnCreditInteractionListener {
+//        void creditAdded(Map credit, String creditedUId);
         void onDrawerOpened();
         void onDrawerClosed();
+        void onLogout();
     }
 }

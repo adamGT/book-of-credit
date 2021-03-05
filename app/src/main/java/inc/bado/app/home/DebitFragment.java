@@ -1,6 +1,7 @@
 package inc.bado.app.home;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -65,6 +66,8 @@ public class DebitFragment extends Fragment implements
 
     private View view;
     private Context mContext;
+    private TextView navUsername;
+    private TextView navUserEmail;
     private DebitListAdapter adapter;
 
     private float totalDebitAmount;
@@ -120,25 +123,28 @@ public class DebitFragment extends Fragment implements
         recyclerView.setAdapter(adapter);
 
         loadDebitData();
-//        setUserData();
         setUpDrawer(view);
         return view;
     }
 
     public void setUserData(User user) {
 
-//        this.userData = userViewModel.getAllUsers().getValue().get(0);
-
         if(user != null){
             this.userData = user;
+//            Toast.makeText(mContext,userData.getName(),Toast.LENGTH_SHORT).show();
 
-            Toast.makeText(mContext,userData.getName(),Toast.LENGTH_SHORT).show();
+            navUsername.setText(userData.getName());
+            navUserEmail.setText(userData.getEmail());
         }else {
             Toast.makeText(mContext,"user is null",Toast.LENGTH_SHORT).show();
         }
     }
 
     private void fetchAllDebit(){
+        if(userData == null){
+            return;
+        }
+
         if (myDebitRef.child(userData.getuID()) != null){
             myDebitRef.child(userData.getuID()).addValueEventListener(new ValueEventListener() {
                 @Override
@@ -161,6 +167,8 @@ public class DebitFragment extends Fragment implements
 
                 }
             });
+        }else {
+            Toast.makeText(mContext,"Error fetching your debit list: its Null",Toast.LENGTH_SHORT).show();
         }
 
     }
@@ -228,18 +236,23 @@ public class DebitFragment extends Fragment implements
 //        debitList.add(new Debit(title,name, amount,createdAt));
 //        adapter.notifyDataSetChanged();
     }
+
+
+
     private void setUpDrawer(View view){
 
         final ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 getActivity(), drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
+
         toggle.syncState();
 
 
         NavigationView navigationView = view.findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+
         View headerView = navigationView.getHeaderView(0);
-        TextView navUsername = (TextView) headerView.findViewById(R.id.nav_name);
+        navUsername = (TextView) headerView.findViewById(R.id.nav_name);
+        navUserEmail = (TextView) headerView.findViewById(R.id.nav_email);
 
         drawer.addDrawerListener(new DrawerLayout.DrawerListener() {
             @Override
@@ -284,6 +297,7 @@ public class DebitFragment extends Fragment implements
 
     }
 
+
     private void setupDrawerContent(NavigationView navigationView) {
         //revision: this don't works, use setOnChildClickListener() and setOnGroupClickListener() above instead
         navigationView.setNavigationItemSelectedListener(
@@ -292,11 +306,17 @@ public class DebitFragment extends Fragment implements
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
                         menuItem.setChecked(true);
                         drawer.closeDrawers();
+
+                        int id = menuItem.getItemId();
+
+                        if (id == R.id.nav_logout) {
+                            logOut();
+                        }
+
                         return true;
                     }
                 });
     }
-
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle beezcovery_navigation view item clicks here.
@@ -308,6 +328,31 @@ public class DebitFragment extends Fragment implements
     }
 
 
+
+    private void logOut(){
+
+
+        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(getContext());
+
+        dialogBuilder.setTitle("Log Out").setMessage("Are you sure you want to logout?");
+        dialogBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                mListener.onLogout();
+
+            }
+        });
+        dialogBuilder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        dialogBuilder.show();
+
+    }
 
     public boolean closeDrawer(){
 
@@ -339,5 +384,6 @@ public class DebitFragment extends Fragment implements
     public interface OnDebitInteractionListener {
         void onDrawerOpened();
         void onDrawerClosed();
+        void onLogout();
     }
 }
